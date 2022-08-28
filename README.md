@@ -1,2 +1,11 @@
-# serverless-contact
-A serverless script to send an email whenever a user fills in a contact form
+# Contact form serverless function
+
+A lambda function setup to send a contact form message to myself from my CV website.
+
+## Commands
+
+To invoke function locally.
+
+```
+serverless invoke local --function hello --data '{"body": {"name":"Burt", "email": "burt@mail.com", "message":"I love you!"}}'
+```

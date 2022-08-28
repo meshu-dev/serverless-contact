@@ -1,0 +1,18 @@
+org: meshu
+app: contact-form
+service: contact-form
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  region: eu-west-2
+  runtime: nodejs14.x
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          method: post
+          path: /
