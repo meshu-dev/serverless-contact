@@ -7,5 +7,5 @@ A lambda function setup to send a contact form message to myself from my CV webs
 To invoke function locally.
 
 ```
-serverless invoke local --function hello --data '{"body": {"name":"Burt", "email": "burt@mail.com", "message":"I love you!"}}'
+serverless invoke local --function hello --data '{"body": {"name":"Burt", "email": "burt@mail.com", "message":"I love you!", "token": "test!"}}'
 ```
