@@ -94,4 +94,4 @@ const handleRequest = async (event) => {
   return getResponse(statusCode, params);
 };
 
-module.exports.hello = handleRequest;
+module.exports.sendMessage = handleRequest;

@@ -10,9 +10,10 @@ provider:
   runtime: nodejs14.x
 
 functions:
-  hello:
-    handler: handler.hello
+  sendMessage:
+    handler: handler.sendMessage
     events:
       - http:
           method: post
           path: /
+          cors: true
