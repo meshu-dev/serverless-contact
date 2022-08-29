@@ -64,6 +64,10 @@ const sendMail = (event) => {
 const getResponse = (statusCode, params) => {
   return {
     statusCode: statusCode,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
     body: JSON.stringify(params)
   };
 };
