@@ -30,7 +30,7 @@ const getMailParams = (params) => {
     const message = params.message;
 
     const emailTitle = 'CV - Contact message';
-    const emailText = `Name: ${name}\n\nEmail: ${email}\n\nMessage: ${message}`;
+    const emailText = `Name: ${name}\nEmail: ${email}\n\n${message}`;
     
     return {
       from: process.env.MAILER_FROM,
