@@ -5,21 +5,13 @@ require('dotenv').config();
 const axios = require('axios').default;
 const nodemailer = require('nodemailer');
 
-const isTokenValid = async (event) => {
-  const params = {
-    'secret': process.env.GOOGLE_SECRET_KEY,
-    'response': event.body.token
-  };
+const isTokenValid = async (token) => {
+  let url = process.env.GOOGLE_RECAPTCHA_URL;
+  url = `${url}?secret=${process.env.GOOGLE_SECRET_KEY}&response=${token}`;
 
-  const response = await axios.post(
-    process.env.GOOGLE_RECAPTCHA_URL,
-    params
-  );
+  const response = await axios.post(url);
 
-  if (response.data && response.data.success === true) {
-    return true;
-  }
-  return false;
+  return response.data ? response.data.success : false;
 };
 
 const getTransporter = () => {
@@ -32,10 +24,10 @@ const getTransporter = () => {
   });
 }
 
-const getMailParams = (event) => {
-    const name = event.body.name;
-    const email = event.body.email;
-    const message = event.body.message;
+const getMailParams = (params) => {
+    const name = params.name;
+    const email = params.email;
+    const message = params.message;
 
     const emailTitle = 'CV - Contact message';
     const emailText = `Name: ${name}\n\nEmail: ${email}\n\nMessage: ${message}`;
@@ -48,58 +40,58 @@ const getMailParams = (event) => {
     };
 };
 
-const sendMail = (event) => {
+const sendMail = async (params) => {
   const transporter = getTransporter();
-  const mailOptions = getMailParams(event);
+  const mailOptions = getMailParams(params);
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
-  });
+  const response = await transporter.sendMail(mailOptions);
+  return response;
 };
 
 const getResponse = (statusCode, params) => {
   return {
     statusCode: statusCode,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': process.env.CV_SITE_URL,
       'Access-Control-Allow-Credentials': true,
     },
     body: JSON.stringify(params)
   };
 };
 
-const getSentResponse = (event, params) => {
-  sendMail(event);
-
+const getSentResponse = (params) => {
   params['success'] = true;
   params['msg'] = 'Message has been sent';
 
   return getResponse(200, params);
 };
 
+const sendContactMessage = async (body) => {
+  if (typeof body === 'string') {
+    body = JSON.parse(body);
+  }
+  const isValid = await isTokenValid(body.token);
+  
+  if (isValid) {
+    const response = await sendMail(body);
+    return response.messageId ? true : false;
+  }
+  return false;
+};
+
 const handleRequest = async (event) => {
-  let params = { isSuccess: false };
+  let statusCode = 406,
+      params = { isSent: false };
 
   if (event.body) {
-    console.log('event.body', event.body);
-
-    const isValid = await isTokenValid(event);
+    const isSent = await sendContactMessage(event.body);
     
-    if (isValid) {
-      return getSentResponse(
-        event,
-        params
-      );
+    if (isSent) {
+      statusCode = 200;
+      params = { isSent: true };
     }
-    params['msg'] = 'Token is invalid';
-  } else {
-    params['msg'] = 'Parameters are required';
   }
-  return getResponse(406, params);
+  return getResponse(statusCode, params);
 };
 
 module.exports.hello = handleRequest;
